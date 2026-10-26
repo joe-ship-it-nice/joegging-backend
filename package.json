@@ -1,5 +1,5 @@
 {
-  "name": "joefriends-backend",
+  "name": "joegging-backend",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "author": "",
   "license": "ISC",
-  "description": "Joefriends social media API",
+  "description": "Joegging running community API",
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
     "cors": "^2.8.6",

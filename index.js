@@ -123,9 +123,14 @@ async function verifyToken(req, res, next) {
   const { data, error } = await supabase.auth.getUser(token);
 
   if (error || !data.user) {
+    console.error(
+      "Token verification failed:",
+      error?.message || "No user returned"
+    );
     return res.status(401).json({
       message: "Invalid or expired token.",
     });
+
   }
 
   req.user = data.user;
@@ -134,11 +139,23 @@ async function verifyToken(req, res, next) {
   next();
 }
 
-// A protected route for testing authentication.
-app.get("/profile", verifyToken, (req, res) => {
+// Return the logged-in user's profile.
+app.get("/profile", verifyToken, async (req, res) => {
+  const supabase = createSupabaseClient(req.token);
+
+  const { data, error } = await supabase
+    .from("users")
+    .select("id, username")
+    .eq("id", req.user.id)
+    .single();
+
+  if (error) throw error;
+
   res.json({
-    message: `Welcome to Joefriends, ${req.user.email}!`,
-    userId: req.user.id,
+    id: data.id,
+    username: data.username,
+    email: req.user.email,
+    created_at: req.user.created_at,
   });
 });
 
@@ -152,8 +169,9 @@ function optionalAuth(req, res, next) {
 }
 
 // Create a post. Login is required.
+// Create a post, optionally with a running photo.
 app.post("/posts", verifyToken, async (req, res) => {
-  const { title, content, visibility } = req.body || {};
+  const { title, content, visibility, image_path } = req.body || {};
 
   if (!isText(title) || !isText(content)) {
     return res.status(400).json({
@@ -181,6 +199,45 @@ app.post("/posts", verifyToken, async (req, res) => {
 
   const supabase = createSupabaseClient(req.token);
 
+  let imagePath = null;
+  let imageUrl = null;
+
+  if (image_path !== undefined && image_path !== null) {
+    // Expected format: user-id/random-photo-id.jpg
+    const photoPathPattern =
+      /^[0-9a-f-]{36}\/[0-9a-f-]{36}\.(jpg|jpeg|png|webp)$/;
+
+    if (
+      typeof image_path !== "string" ||
+      !photoPathPattern.test(image_path) ||
+      !image_path.startsWith(`${req.user.id}/`)
+    ) {
+      return res.status(400).json({
+        message: "Invalid photo path. Upload a photo using your own account.",
+      });
+    }
+
+    // Check that the uploaded photo is accessible before saving the post.
+    const { error: photoError } = await supabase.storage
+      .from("running-photos")
+      .createSignedUrl(image_path, 60);
+
+    if (photoError) {
+      return res.status(400).json({
+        message: "The photo could not be found or accessed. Upload it again.",
+      });
+    }
+
+    imagePath = image_path;
+
+    // Store a stable authenticated URL, not an expiring signed URL.
+    const baseUrl = process.env.SUPABASE_URL.replace(/\/+$/, "");
+
+    imageUrl =
+      `${baseUrl}/storage/v1/object/authenticated/` +
+      `running-photos/${imagePath}`;
+  }
+
   const { data, error } = await supabase
     .from("posts")
     .insert({
@@ -188,20 +245,24 @@ app.post("/posts", verifyToken, async (req, res) => {
       title: title.trim(),
       content: content.trim(),
       visibility,
+      image_path: imagePath,
+      image_url: imageUrl,
     })
     .select()
     .single();
 
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
 
   return res.status(201).json(data);
 });
 
 // Read posts. Supabase policies filter the results.
+// Read posts and generate temporary links for their photos.
 app.get("/posts", optionalAuth, async (req, res) => {
   const supabase = createSupabaseClient(req.token);
+
+  // Avoid caching personalized posts and signed photo links.
+  res.set("Cache-Control", "no-store");
 
   const { data, error } = await supabase
     .from("posts")
@@ -212,23 +273,50 @@ app.get("/posts", optionalAuth, async (req, res) => {
       content,
       visibility,
       created_at,
+      image_path,
       users(username)
     `)
     .order("created_at", { ascending: false });
 
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
 
-  const posts = data.map((post) => ({
-    id: post.id,
-    user_id: post.user_id,
-    title: post.title,
-    content: post.content,
-    visibility: post.visibility,
-    created_at: post.created_at,
-    author: post.users?.username || "Unknown",
-  }));
+  const posts = await Promise.all(
+    data.map(async (post) => {
+      let imageUrl = null;
+      let imageUnavailable = false;
+
+      if (post.image_path) {
+        const { data: photo, error: photoError } =
+          await supabase.storage
+            .from("running-photos")
+            .createSignedUrl(post.image_path, 3600);
+
+        if (photoError) {
+          console.error(
+            `Photo unavailable for post ${post.id}:`,
+            photoError.message
+          );
+
+          imageUnavailable = true;
+        } else {
+          imageUrl = photo.signedUrl;
+        }
+      }
+
+      return {
+        id: post.id,
+        user_id: post.user_id,
+        title: post.title,
+        content: post.content,
+        visibility: post.visibility,
+        created_at: post.created_at,
+        author: post.users?.username || "Unknown",
+        image_path: post.image_path,
+        image_url: imageUrl,
+        image_unavailable: imageUnavailable,
+      };
+    })
+  );
 
   return res.json(posts);
 });
@@ -391,6 +479,6 @@ app.use((error, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Joefriends API is running on port ${PORT}`);
+  console.log(`Joegging API is running on port ${PORT}`);
 });
 
