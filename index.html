@@ -3,7 +3,855 @@
 
 <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Joegging documentation." />
-    <title>Joegging Documentation</title>
+    <meta name="description"
+        content="Joegging Mission 10 development report: authentication, testing, deployment, and photo sharing." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Joegging | Development report:authentication, testing, deployment, and photo sharing </title>
+
+    <style>
+        :root {
+            color-scheme: dark;
+            --background: #10140f;
+            --surface: #1a2118;
+            --border: #34412e;
+            --text: #f4f6ef;
+            --muted: #bac5b3;
+            --accent: #c5f56a;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            background: var(--background);
+            color: var(--text);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont,
+                "Segoe UI", sans-serif;
+            line-height: 1.7;
+        }
+
+        a {
+            color: var(--accent);
+        }
+
+        a:hover {
+            text-decoration-thickness: 2px;
+        }
+
+        a:focus-visible,
+        summary:focus-visible {
+            outline: 3px solid var(--accent);
+            outline-offset: 5px;
+        }
+
+        .container {
+            width: min(1120px, calc(100% - 40px));
+            margin: auto;
+        }
+
+        .topbar {
+            border-bottom: 1px solid var(--border);
+            background: #10140fee;
+        }
+
+        .topbar .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 18px;
+            padding-block: 20px;
+        }
+
+        .brand {
+            color: var(--text);
+            font-size: 24px;
+            font-weight: 900;
+            font-style: italic;
+            letter-spacing: -1px;
+            text-decoration: none;
+        }
+
+        .brand span {
+            color: var(--accent);
+        }
+
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            font-size: 14px;
+        }
+
+        nav a {
+            color: var(--muted);
+            text-decoration: none;
+        }
+
+        .hero {
+            padding: 80px 0 60px;
+            background:
+                radial-gradient(ellipse at top right, #48612755, transparent 65%);
+        }
+
+        .eyebrow {
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        h1,
+        h2,
+        h3 {
+            line-height: 1.15;
+            letter-spacing: -0.035em;
+        }
+
+        h1 {
+            margin: 22px 0;
+            font-size: clamp(48px, 9vw, 94px);
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        h1 span {
+            color: var(--accent);
+        }
+
+        h2 {
+            font-size: clamp(28px, 4vw, 42px);
+        }
+
+        h3 {
+            font-size: 22px;
+        }
+
+        .intro {
+            max-width: 740px;
+            color: var(--muted);
+            font-size: 19px;
+        }
+
+        .links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 20px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 750;
+        }
+
+        .button.primary {
+            color: var(--background);
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        main {
+            padding-bottom: 60px;
+        }
+
+        section {
+            padding-block: 30px;
+            scroll-margin-top: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .card,
+        .checkpoint,
+        details {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+        }
+
+        .card {
+            padding: 24px;
+        }
+
+        .card h3 {
+            margin-top: 0;
+        }
+
+        .card p {
+            color: var(--muted);
+        }
+
+        .checkpoint {
+            padding: clamp(22px, 4vw, 40px);
+            margin-bottom: 24px;
+            border-top: 4px solid var(--accent);
+        }
+
+        .checkpoint h2 {
+            margin-top: 12px;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 5px 10px;
+            border: 1px solid #63744a;
+            border-radius: 5px;
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 750;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        li {
+            margin-bottom: 12px;
+        }
+
+        li:last-child {
+            margin-bottom: 0;
+        }
+
+        ol,
+        ul {
+            padding-left: 24px;
+        }
+
+        code {
+            color: #def4b7;
+            background: #0e130c;
+            padding: 2px 6px;
+            border-radius: 4px;
+            overflow-wrap: anywhere;
+        }
+
+        .note {
+            padding: 18px 20px;
+            border-left: 3px solid var(--accent);
+            background: #c5f56a0a;
+            color: var(--muted);
+            margin-top: 24px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th,
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        th {
+            color: var(--accent);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        td {
+            color: var(--muted);
+        }
+
+        details {
+            margin-bottom: 14px;
+            padding: 18px 22px;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: 750;
+        }
+
+        details p {
+            color: var(--muted);
+        }
+
+        footer {
+            padding: 30px 0;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        @media (max-width: 760px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero {
+                padding-top: 48px;
+            }
+
+            .container {
+                width: min(1120px, calc(100% - 28px));
+            }
+
+            th,
+            td {
+                padding: 12px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+        }
+
+        @media print {
+            :root {
+                color-scheme: light;
+                --background: white;
+                --surface: white;
+                --border: #ccc;
+                --text: #111;
+                --muted: #333;
+                --accent: #345b00;
+            }
+
+            .hero {
+                background: none;
+                padding-top: 25px;
+            }
+
+            nav,
+            .links {
+                display: none;
+            }
+
+            code {
+                background: #eee;
+                color: #111;
+            }
+
+            .checkpoint,
+            .card {
+                break-inside: avoid;
+            }
+
+            h1 {
+                font-size: 48px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="container">
+            <a class="brand" href="#">JOEG<span>GING.</span></a>
+
+            <nav aria-label="Report navigation">
+                <a href="#overview">Overview</a>
+                <a href="#checkpoints">Checkpoints</a>
+                <a href="#validation">Validation</a>
+                <a href="#reflection">Reflection</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="hero">
+        <div class="container">
+            <p class="eyebrow">Joegging · Development report</p>
+
+            <h1>Every pace.<br /><span>A place.</span></h1>
+
+            <p class="intro">
+                From Joefriends to Joegging: extending my Mission 9 social API
+                into a full-stack running community with Google login,
+                running photos, automated tests, and live deployments.
+            </p>
+
+            <div class="links">
+                <a class="button primary" href="https://joegging-frontend.vercel.app">
+                    Visit Joegging →
+                </a>
+
+                <a class="button" href="https://github.com/joe-ship-it-nice/joegging-frontend">
+                    Frontend repository
+                </a>
+
+                <a class="button" href="https://github.com/joe-ship-it-nice/joegging-backend">
+                    Backend repository
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <main class="container">
+        <section id="overview">
+            <p class="eyebrow">The starting line</p>
+            <h2>Built on Joefriends.</h2>
+
+            <p>
+                Joegging reuses and extends the Joefriends Express backend.
+                Existing account, post, profile, and friendship features provide
+                the foundation. Supabase supplies authentication, database storage,
+                and image storage; the Express API continues to manage application data.
+            </p>
+
+            <div class="grid">
+                <article class="card">
+                    <h3>Frontend</h3>
+                    <p>
+                        React, Vite, and React Router provide the login, signup,
+                        feed, friends, and profile pages.
+                    </p>
+                </article>
+
+                <article class="card">
+                    <h3>Backend</h3>
+                    <p>
+                        The existing Express API validates requests, checks
+                        authentication tokens, and reads or writes application data.
+                    </p>
+                </article>
+
+                <article class="card">
+                    <h3>Supabase</h3>
+                    <p>
+                        Authentication manages sessions, PostgreSQL stores community
+                        data, and Storage holds running photos.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section id="checkpoints">
+            <p class="eyebrow">The development journey</p>
+            <h2>Checkpoint walkthrough.</h2>
+
+            <p>
+                This report follows the requirements shared for the project.
+                The foundation section summarises the initial full-stack work;
+                cover testing and deployment, Google OAuth,
+                and image posts.
+            </p>
+
+            <article class="checkpoint">
+                <span class="tag">Foundation · Full-stack integration</span>
+                <h2>Turn Joefriends into a running club.</h2>
+
+                <ol>
+                    <li>
+                        <strong>Reuse the Joefriends API.</strong>
+                        Copy the existing project into the Joegging workspace,
+                        preserving its post and friendship functionality.
+                    </li>
+                    <li>
+                        <strong>Connect frontend and backend.</strong>
+                        Use API endpoints for posts, users, friendships, and profile data.
+                        Configure the frontend API address through
+                        <code>VITE_API_URL</code>.
+                    </li>
+                    <li>
+                        <strong>Manage sessions with Supabase.</strong>
+                        Keep the React authentication context in sync with session
+                        changes and attach access tokens to protected API requests.
+                    </li>
+                    <li>
+                        <strong>Protect application pages.</strong>
+                        Wait for session initialisation before redirecting guests
+                        away from the feed, friends, and profile pages.
+                    </li>
+                    <li>
+                        <strong>Redesign the experience.</strong>
+                        Replace Joefriends branding with Joegging, introduce running
+                        prompts, and replace DitherVeil with a running-video background.
+                    </li>
+                </ol>
+
+                <p class="note">
+                    The backend remains an extension of the Mission 9 submission.
+                    Deploying it to a separate Joegging project does not replace it
+                    with a different API.
+                </p>
+            </article>
+
+            <article class="checkpoint">
+                <span class="tag">Checkpoint 2 · Testing and deployment</span>
+                <h2>Test the journey before shipping.</h2>
+
+                <ol>
+                    <li>
+                        <strong>Establish separate repositories.</strong>
+                        Point the frontend and backend Git remotes to their respective
+                        Joegging repositories, preserving the earlier project history.
+                    </li>
+                    <li>
+                        <strong>Create the testing branch.</strong>
+                        Develop browser tests on
+                        <code>feature/add-automated-tests</code>.
+                    </li>
+                    <li>
+                        <strong>Add Playwright tests.</strong>
+                        Test email/password login, session persistence after a refresh,
+                        and creating a post that remains visible after refreshing.
+                    </li>
+                    <li>
+                        <strong>Configure the test environment.</strong>
+                        Keep test credentials in an ignored local environment file.
+                        Configure Playwright to start both the frontend and backend.
+                    </li>
+                    <li>
+                        <strong>Automate checks with GitHub Actions.</strong>
+                        Download both repositories, install dependencies, run lint
+                        and the production build, install Chromium, and run the tests.
+                        The frontend workflow runs on pushes and pull requests.
+                    </li>
+                    <li>
+                        <strong>Review and merge.</strong>
+                        Open a pull request, review the changes with AI assistance,
+                        record the findings, and merge after successful checks.
+                    </li>
+                    <li>
+                        <strong>Deploy both applications.</strong>
+                        Deploy the Express backend and Vite frontend as separate
+                        Vercel projects. Configure their Supabase environment variables.
+                    </li>
+                    <li>
+                        <strong>Support direct page visits.</strong>
+                        Add a frontend <code>vercel.json</code> rewrite through
+                        <code>feature/configure-deployment</code> so routes such as
+                        <code>/feed</code> and <code>/login</code> work on refresh.
+                    </li>
+                    <li>
+                        <strong>Verify frontend automatic deployment.</strong>
+                        Confirm that merging the OAuth improvements into
+                        <code>main</code> produces a working production update.
+                    </li>
+                </ol>
+
+                <p class="note">
+                    Verified: local lint, build, and two browser tests passed.
+                    A GitHub Actions run also passed. Frontend automatic deployment
+                    was confirmed. A deployment triggered by a new backend commit
+                    still needs explicit verification.
+                </p>
+            </article>
+
+            <article class="checkpoint">
+                <span class="tag">Checkpoint 3 · Google OAuth</span>
+                <h2>Join the club with Google.</h2>
+
+                <ol>
+                    <li>
+                        <strong>Configure the Google OAuth client.</strong>
+                        Connect Google's client credentials to the Supabase Google
+                        provider and use Supabase's callback URL for Google's redirect.
+                    </li>
+                    <li>
+                        <strong>Add Google login.</strong>
+                        Call <code>signInWithOAuth</code> with the Google provider
+                        from the frontend authentication context.
+                    </li>
+                    <li>
+                        <strong>Restore the session after returning.</strong>
+                        Subscribe to authentication state changes and let the route
+                        guards send signed-in users to the feed.
+                    </li>
+                    <li>
+                        <strong>Connect the user profile.</strong>
+                        Retrieve profile data from the protected
+                        <code>GET /profile</code> route using the authenticated
+                        user's identity.
+                    </li>
+                    <li>
+                        <strong>Allow the production return URL.</strong>
+                        Add
+                        <code>https://joegging-frontend.vercel.app/login</code>
+                        to Supabase's allowed redirects.
+                    </li>
+                    <li>
+                        <strong>Review and improve the implementation.</strong>
+                        On <code>feature/add-google-oauth</code>, clear old login
+                        errors when retrying, reuse the authenticated API helper in
+                        Profile, ignore aborted responses, and handle missing dates.
+                    </li>
+                    <li>
+                        <strong>Validate and merge.</strong>
+                        Run lint, build, and existing browser tests; manually verify
+                        Google login and profile behaviour; review and merge the PR.
+                        Confirm the updated profile works on the live website.
+                    </li>
+                </ol>
+
+                <p class="note">
+                    Google login and Profile were manually verified on the deployed
+                    app. The existing automated tests cover email/password login
+                    and posting, not Google's external sign-in screen.
+                </p>
+            </article>
+
+            <article class="checkpoint">
+                <span class="tag">Checkpoint 4 · Image posts</span>
+                <h2>Share the run, not just the words.</h2>
+
+                <ol>
+                    <li>
+                        <strong>Use Supabase Storage.</strong>
+                        Upload running photos to the <code>running-photos</code>
+                        bucket using a user-specific folder and a unique filename.
+                    </li>
+                    <li>
+                        <strong>Validate the selection.</strong>
+                        Accept non-empty JPG, PNG, or WebP files up to 5 MB in the
+                        frontend. Display upload progress and disable repeated submissions.
+                    </li>
+                    <li>
+                        <strong>Associate the image with a post.</strong>
+                        Send <code>image_path</code> to the existing
+                        <code>POST /posts</code> route. The backend checks the path
+                        belongs to the authenticated user's folder and checks access.
+                    </li>
+                    <li>
+                        <strong>Store the image reference.</strong>
+                        Save the image path and a stable authenticated URL with the
+                        post. Generate temporary signed image URLs when reading the feed.
+                    </li>
+                    <li>
+                        <strong>Display the photo.</strong>
+                        Render the returned image URL beside the post content,
+                        author, visibility, and creation date.
+                    </li>
+                    <li>
+                        <strong>Handle loading failures.</strong>
+                        On the frontend branch <code>feature/add-image-posts</code>,
+                        add a reusable <code>PostPhoto</code> component that shows
+                        a helpful message when an image fails to load.
+                    </li>
+                    <li>
+                        <strong>Test the behaviour.</strong>
+                        Verify uploading a photo, viewing it after refreshing,
+                        and displaying the fallback using a deliberately invalid image URL.
+                        Restore the real URL after the test.
+                    </li>
+                </ol>
+
+                <p class="note">
+                    Upload, refresh, and fallback behaviour were reported working.
+                    The final image-post PR merge and production deployment should
+                    be confirmed before marking this checkpoint fully complete.
+                    Friends-only photo access also depends on the database and
+                    Storage policies, not just the frontend controls.
+                </p>
+            </article>
+        </section>
+
+        <section id="validation">
+            <p class="eyebrow">Evidence and limits</p>
+            <h2>What has been checked?</h2>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">Area</th>
+                            <th scope="col">Evidence</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <td>Email/password login</td>
+                            <td>Playwright verifies login and session persistence.</td>
+                            <td>Passed locally and in CI</td>
+                        </tr>
+                        <tr>
+                            <td>Post creation</td>
+                            <td>Playwright creates a uniquely named post and refreshes.</td>
+                            <td>Passed locally and in CI</td>
+                        </tr>
+                        <tr>
+                            <td>Code checks</td>
+                            <td>ESLint and the Vite production build.</td>
+                            <td>Passed for the OAuth changes</td>
+                        </tr>
+                        <tr>
+                            <td>Backend deployment</td>
+                            <td>The deployed <code>/posts</code> endpoint returns JSON.</td>
+                            <td>Verified</td>
+                        </tr>
+                        <tr>
+                            <td>Frontend deployment</td>
+                            <td>The live website displays the feed.</td>
+                            <td>Verified</td>
+                        </tr>
+                        <tr>
+                            <td>Google login and Profile</td>
+                            <td>Manual checks on the deployed website.</td>
+                            <td>Reported working</td>
+                        </tr>
+                        <tr>
+                            <td>Photo display and fallback</td>
+                            <td>Manual upload, refresh, and invalid-image checks.</td>
+                            <td>Reported working locally</td>
+                        </tr>
+                        <tr>
+                            <td>Frontend automatic deployment</td>
+                            <td>Production update following the OAuth PR merge.</td>
+                            <td>Verified</td>
+                        </tr>
+                        <tr>
+                            <td>Backend automatic deployment</td>
+                            <td>Observe a deployment triggered by a new backend commit.</td>
+                            <td>Verification remaining</td>
+                        </tr>
+                        <tr>
+                            <td>Image-post PR and release</td>
+                            <td>Confirm successful checks, merge, and production update.</td>
+                            <td>Confirmation remaining</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section>
+            <p class="eyebrow">The API behind the club</p>
+            <h2>Existing routes, extended.</h2>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">Method</th>
+                            <th scope="col">Route</th>
+                            <th scope="col">Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>POST</td>
+                            <td><code>/signup</code></td>
+                            <td>Create an email/password account.</td>
+                        </tr>
+                        <tr>
+                            <td>POST</td>
+                            <td><code>/login</code></td>
+                            <td>Retained Mission 9 login endpoint; the current frontend
+                                signs in through Supabase directly.</td>
+                        </tr>
+                        <tr>
+                            <td>GET</td>
+                            <td><code>/profile</code></td>
+                            <td>Return the authenticated runner's profile.</td>
+                        </tr>
+                        <tr>
+                            <td>GET</td>
+                            <td><code>/posts</code></td>
+                            <td>Return visible posts with temporary photo links.</td>
+                        </tr>
+                        <tr>
+                            <td>POST</td>
+                            <td><code>/posts</code></td>
+                            <td>Create a post with an optional uploaded-photo reference.</td>
+                        </tr>
+                        <tr>
+                            <td>GET</td>
+                            <td><code>/users</code></td>
+                            <td>List other users.</td>
+                        </tr>
+                        <tr>
+                            <td>GET / POST</td>
+                            <td><code>/friends</code></td>
+                            <td>List friendships or send a friend request.</td>
+                        </tr>
+                        <tr>
+                            <td>PATCH</td>
+                            <td><code>/friends/:id/accept</code></td>
+                            <td>Accept a pending request addressed to the current user.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="reflection">
+            <p class="eyebrow">Lessons from the run</p>
+            <h2>Problems solved along the way.</h2>
+
+            <details>
+                <summary>Google login returned to the login page</summary>
+                <p>
+                    Session handling moved into the Supabase authentication context.
+                    Protected routes wait for authentication initialisation, and
+                    production redirect URLs were configured for the deployed frontend.
+                </p>
+            </details>
+
+            <details>
+                <summary>Playwright could not start the backend</summary>
+                <p>
+                    Port 3000 was already occupied by a development server.
+                    Stopping the manually started servers allowed Playwright to
+                    manage both servers itself.
+                </p>
+            </details>
+
+            <details>
+                <summary>Git showed generated files and dependencies</summary>
+                <p>
+                    Updating .gitignore excluded node_modules, dist, environment files,
+                    and Playwright output. The staged file list was checked before commits.
+                </p>
+            </details>
+
+            <details>
+                <summary>Feature work started before branching</summary>
+                <p>
+                    OAuth and uploads were initially implemented before the requested
+                    feature branches. Later branches contain genuine review improvements
+                    and fixes.
+                </p>
+            </details>
+
+            <details>
+                <summary>Remaining improvements</summary>
+                <p>
+                    Automated post tests leave test records behind. Failed post saves
+                    can also leave unused uploaded files. Future work should introduce
+                    safe cleanup, add image-upload browser tests, verify Storage policies,
+                    and review dependency audit findings.
+                </p>
+            </details>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <strong>JOEGGING.</strong>
+            Built by Lim Joe Onn
+            <br />
+            Development report · Update verification statuses as checks are completed.
+        </div>
+    </footer>
+</body>
+
+</html>
