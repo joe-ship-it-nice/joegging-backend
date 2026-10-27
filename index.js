@@ -164,12 +164,10 @@ function optionalAuth(req, res, next) {
   if (req.get("Authorization") !== undefined) {
     return verifyToken(req, res, next);
   }
-
   next();
 }
 
-// Create a post. Login is required.
-// Create a post, optionally with a running photo.
+// Create a post, optionally with a running photo. Login is required.
 app.post("/posts", verifyToken, async (req, res) => {
   const { title, content, visibility, image_path } = req.body || {};
 
@@ -256,7 +254,6 @@ app.post("/posts", verifyToken, async (req, res) => {
   return res.status(201).json(data);
 });
 
-// Read posts. Supabase policies filter the results.
 // Read posts and generate temporary links for their photos.
 app.get("/posts", optionalAuth, async (req, res) => {
   const supabase = createSupabaseClient(req.token);
